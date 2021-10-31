@@ -64,6 +64,8 @@ void loop() {
   lcd.print(distance_left);
   lcd.print("cm");
 
+  Serial.println(distance_left);
+
   
   if(reads == len){
     // If 7 read are taken
@@ -80,14 +82,22 @@ void loop() {
     if(absolute_distance <= 5.0){
       // Self defence
       if(override <= 2){
-          disable_manual_override();
+           // Turning ON light
+            digitalWrite(light,HIGH);
+            delay(4000);
+            digitalWrite(light,LOW);
+          // Turning OFF light
           override++;
        }
     }
-    else if(absolute_distance > 5.0 && absolute_distance <= 11.0){
+    else if(absolute_distance > 5.0 && absolute_distance <= 12.0){
       // Self defence
        if(override==0){
-          disable_manual_override();
+          // Turning ON light
+          digitalWrite(light,HIGH);
+          delay(4000);
+          digitalWrite(light,LOW);
+          // Turning OFF light
           override++;
        } 
        
@@ -164,36 +174,17 @@ boolean sorting_and_trigger(float static_distance[],int static_distance_len ){
     static_distance[k + 1] = j;
   }
 
-  int count = 0;
-  float middle_static_distances[10];
+  int trim_val = 3;
+  float val1 = static_distance[trim_val];
+  float val2 = static_distance[static_distance_len-1-trim_val];
+  float diff = val2 - val1;
 
-  while(count < 10){
-    middle_static_distances[count] = static_distance[count+9];
-    count++;
-  }
-
-  float val1 = middle_static_distances[0];
-  for(int i = 1; i < 10; i++){
-    float val2 = middle_static_distances[i];
-    float diff = val2 - val1;
-    val1 = val2;
-
-    if(diff < 3.0){
+    if(diff < 2.0){
       Serial.println("diff => ");
       Serial.println(diff);
       return true;
+    }else{
+      return false;
     }
-  }
-
-  return false;
   
-}
-
-
-void disable_manual_override(){
-  // Turning ON light
-  digitalWrite(light,HIGH);
-  delay(4000);
-  digitalWrite(light,LOW);
-  // Turning OFF light
 }
