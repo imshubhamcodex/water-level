@@ -79,9 +79,13 @@ void loop() {
     lcd.print(absolute_distance);
     lcd.print("cm");
 
-    if(absolute_distance <= 5.0){
+    if(absolute_distance >= 20.0){
+      override = 0;
+    }
+
+    if(absolute_distance <= 10.0){
       // Self defence
-      if(override <= 2){
+      if(override <= 1){
            // Turning ON light
             digitalWrite(light,HIGH);
             delay(4000);
@@ -90,7 +94,7 @@ void loop() {
           override++;
        }
     }
-    else if(absolute_distance > 5.0 && absolute_distance <= 12.0){
+    else if(absolute_distance >= 14.0 && absolute_distance <= 16.0){
       // Self defence
        if(override==0){
           // Turning ON light
@@ -101,11 +105,8 @@ void loop() {
           override++;
        } 
        
-    }else if(absolute_distance <= 20.0){
-      // Moter OFF
-      digitalWrite(light,LOW);
-      
-    }else if(absolute_distance >= 55.0){
+    }
+    else if(absolute_distance >= 31.0){
       // Motor ON
       override = 0;
       digitalWrite(light,HIGH);
@@ -114,6 +115,7 @@ void loop() {
       Serial.println(absolute_distance);
 
       //Auto ON
+      
       if(static_distance_index < static_distance_len){
         static_distance[static_distance_index] = absolute_distance;
         static_distance_index++;
@@ -176,10 +178,10 @@ boolean sorting_and_trigger(float static_distance[],int static_distance_len ){
 
   int trim_val = 3;
   float val1 = static_distance[trim_val];
-  float val2 = static_distance[static_distance_len-1-trim_val];
+  float val2 = static_distance[static_distance_len -1 - trim_val];
   float diff = val2 - val1;
 
-    if(diff < 2.0){
+    if(diff <= 2.0){
       Serial.println("diff => ");
       Serial.println(diff);
       return true;
