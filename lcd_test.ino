@@ -106,7 +106,7 @@ void loop() {
        } 
        
     }
-    else if(absolute_distance >= 31.0){
+    else if(absolute_distance >= 55.0){
       // Motor ON
       override = 0;
       digitalWrite(light,HIGH);
