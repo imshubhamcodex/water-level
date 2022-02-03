@@ -17,6 +17,7 @@ int reads = 0; // Numbers of distance captured
 int len = 7; // Array length
 float distances[7];
 int override = 0;
+boolean motor_off = false;
 
 
 void setup() {
@@ -58,11 +59,11 @@ void loop() {
         digitalWrite(light, LOW);
         // Turning OFF light
         override++;
-      }else{
-        delay(45*60*1000);  
+      } else {
+        digitalWrite(light, LOW);
       }
     }
-    else if (absolute_distance >= 22.0 && absolute_distance <= 26.0) {
+    else if (absolute_distance >= 16.0 && absolute_distance <= 26.0) {
       // OFF
       if (override == 0) {
         // Turning ON light
@@ -71,13 +72,16 @@ void loop() {
         digitalWrite(light, LOW);
         // Turning OFF light
         override++;
-      }else{
-        delay(15*60*1000);  
+      } else {
+        delay(2 * 60 * 1000);
       }
 
     }
-    else if(absolute_distance >= 36.0 && absolute_distance <= 65.0){
-      delay(10*60*1000);
+    else if (absolute_distance >= 27.0 && absolute_distance < 36.0) {
+      delay(2 * 60 * 1000);
+    }
+    else if (absolute_distance >= 36.0 && absolute_distance <= 65.0) {
+      delay(6 * 60 * 1000);
     }
     else if (absolute_distance >= 75.0) {
       // Motor ON
@@ -91,12 +95,9 @@ void loop() {
 
         Serial.println("absolute_distance = >");
         Serial.println(absolute_distance);
-        delay(3*60*1000);
+        delay(2 * 60 * 1000);
       }
 
-    }
-    else {
-      digitalWrite(light, LOW);
     }
 
   } else {
