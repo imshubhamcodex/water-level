@@ -17,176 +17,112 @@ int reads = 0; // Numbers of distance captured
 int len = 7; // Array length
 float distances[7];
 int override = 0;
-float static_distance[30]; // to auto on motor
-int static_distance_len = 30;
-int static_distance_index = 0;
+
 
 void setup() {
   lcd.begin(16, 2);
   Serial.begin(9600);
-  pinMode(trigger,OUTPUT);
-  pinMode(echo,INPUT);
-  pinMode(light,OUTPUT);
-
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Made by");
-  lcd.setCursor(0,1);
-  lcd.print("Shubham");
-  delay(2000);
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Boost by");
-  lcd.setCursor(0,1);
-  lcd.print("Monu");
-  delay(2000);
+  pinMode(trigger, OUTPUT);
+  pinMode(echo, INPUT);
+  pinMode(light, OUTPUT);
 }
 
 void loop() {
   // Activating sonar
-  digitalWrite(trigger,LOW);
+  digitalWrite(trigger, LOW);
   delayMicroseconds(2);
-  digitalWrite(trigger,HIGH);
+  digitalWrite(trigger, HIGH);
   delayMicroseconds(10);
-  digitalWrite(trigger,LOW);
+  digitalWrite(trigger, LOW);
   delayMicroseconds(2);
-  time_taken = pulseIn(echo,HIGH);
-  distance_left = time_taken*340/20000;
+  time_taken = pulseIn(echo, HIGH);
+  distance_left = time_taken * 340 / 20000;
 
   // A distance measured so:
   reads++;
 
-  lcd.clear();
-  
-  lcd.setCursor(0, 0);
-  lcd.print("Reading");
-  lcd.setCursor(0, 1);
-  lcd.print(distance_left);
-  lcd.print("cm");
-
-  Serial.println(distance_left);
-
-  
-  if(reads == len){
-    // If 7 read are taken
+  if (reads == len) {
     reads = 0; // Reset reads
-    
-    float absolute_distance = discard_outliers(distances,len); // Value after discarding outliers
-    lcd.clear();
-    lcd.setCursor(0, 0);
-    lcd.print("LEVEL =>");
-    lcd.setCursor(0, 1);
-    lcd.print(absolute_distance);
-    lcd.print("cm");
 
-    if(absolute_distance >= 20.0){
-      override = 0;
-    }
+    float absolute_distance = discard_outliers(distances, len); // Value after discarding outliers
 
-    if(absolute_distance <= 10.0){
+    Serial.println(absolute_distance);
+
+
+    if (absolute_distance <= 7.0) {
       // Self defence
-      if(override <= 1){
-           // Turning ON light
-            digitalWrite(light,HIGH);
-            delay(4000);
-            digitalWrite(light,LOW);
-          // Turning OFF light
-          override++;
-       }
+      if (override <= 1) {
+        // Turning ON light
+        digitalWrite(light, HIGH);
+        delay(4000);
+        digitalWrite(light, LOW);
+        // Turning OFF light
+        override++;
+      }else{
+        delay(45*60*1000);  
+      }
     }
-    else if(absolute_distance >= 14.0 && absolute_distance <= 16.0){
-      // Self defence
-       if(override==0){
-          // Turning ON light
-          digitalWrite(light,HIGH);
-          delay(4000);
-          digitalWrite(light,LOW);
-          // Turning OFF light
-          override++;
-       } 
-       
+    else if (absolute_distance >= 22.0 && absolute_distance <= 26.0) {
+      // OFF
+      if (override == 0) {
+        // Turning ON light
+        digitalWrite(light, HIGH);
+        delay(4000);
+        digitalWrite(light, LOW);
+        // Turning OFF light
+        override++;
+      }else{
+        delay(15*60*1000);  
+      }
+
     }
-    else if(absolute_distance >= 55.0){
+    else if(absolute_distance >= 36.0 && absolute_distance <= 65.0){
+      delay(10*60*1000);
+    }
+    else if (absolute_distance >= 75.0) {
       // Motor ON
       override = 0;
-      digitalWrite(light,HIGH);
 
-      Serial.println("absolute_distance = >");
-      Serial.println(absolute_distance);
+      if (absolute_distance >= 1000) {
+        digitalWrite(light, LOW);
+      } else {
 
-      //Auto ON
-      
-      if(static_distance_index < static_distance_len){
-        static_distance[static_distance_index] = absolute_distance;
-        static_distance_index++;
+        digitalWrite(light, HIGH);
+
+        Serial.println("absolute_distance = >");
+        Serial.println(absolute_distance);
+        delay(3*60*1000);
       }
 
-      if(static_distance_index == static_distance_len){
-        boolean auto_on = sorting_and_trigger(static_distance,static_distance_len);
-        
-        if(auto_on){
-          digitalWrite(light,LOW);
-          delay(3000);
-          digitalWrite(light,HIGH);
-         }
-
-          static_distance_index = 0;
-         
-      }
-      
     }
-    
-  }else{
-    // If 5 read are not taken
-    distances[reads-1] = distance_left;
+    else {
+      digitalWrite(light, LOW);
+    }
+
+  } else {
+    // If 7 read are not taken
+    distances[reads - 1] = distance_left;
   }
 
-  delay(2000);
-  
+  delay(1000);
+
 }
 
-float discard_outliers(float distances[],int len){
+float discard_outliers(float distances[], int len) {
   // Insertion Sort
-   for (int i = 1; i < len; ++i){
+  for (int i = 1; i < len; ++i) {
     float j = distances[i];
     int k;
-    for (k = i - 1; (k >= 0) && (j < distances[k]); k--){
+    for (k = i - 1; (k >= 0) && (j < distances[k]); k--) {
       distances[k + 1] = distances[k];
     }
     distances[k + 1] = j;
   }
 
   // Returning middle value
-  if(len%2 == 0){
-    return distances[len/2 -1];
-  }else{
-    return distances[((len+1)/2)-1];
+  if (len % 2 == 0) {
+    return distances[len / 2 - 1];
+  } else {
+    return distances[((len + 1) / 2) - 1];
   }
-}
-
-boolean sorting_and_trigger(float static_distance[],int static_distance_len ){
-
-  // Insertion Sort
-   for (int i = 1; i < static_distance_len; ++i){
-    float j = static_distance[i];
-    int k;
-    for (k = i - 1; (k >= 0) && (j < static_distance[k]); k--){
-      static_distance[k + 1] = static_distance[k];
-    }
-    static_distance[k + 1] = j;
-  }
-
-  int trim_val = 3;
-  float val1 = static_distance[trim_val];
-  float val2 = static_distance[static_distance_len -1 - trim_val];
-  float diff = val2 - val1;
-
-    if(diff <= 2.0){
-      Serial.println("diff => ");
-      Serial.println(diff);
-      return true;
-    }else{
-      return false;
-    }
-  
 }
