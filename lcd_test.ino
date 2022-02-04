@@ -75,15 +75,11 @@ void loop() {
       } else {
         delay(2 * 60 * 1000);
       }
-
     }
-    else if (absolute_distance >= 27.0 && absolute_distance < 36.0) {
+    else if (absolute_distance >= 36.0 && absolute_distance <= 56.0) {
       delay(2 * 60 * 1000);
     }
-    else if (absolute_distance >= 36.0 && absolute_distance <= 65.0) {
-      delay(6 * 60 * 1000);
-    }
-    else if (absolute_distance >= 75.0) {
+    else if (absolute_distance >= 65.0) {
       // Motor ON
       override = 0;
 
