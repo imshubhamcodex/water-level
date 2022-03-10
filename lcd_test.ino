@@ -28,7 +28,6 @@ void setup() {
 }
 
 void loop() {
-  // Activating sonar
   digitalWrite(trigger, LOW);
   delayMicroseconds(2);
   digitalWrite(trigger, HIGH);
@@ -38,60 +37,44 @@ void loop() {
   time_taken = pulseIn(echo, HIGH);
   distance_left = time_taken * 340 / 20000;
 
+  Serial.println(distance_left);
 
   if (reads == len) {
-    reads = 0; // Reset reads
+    reads = 0;
 
-    float absolute_distance = discard_outliers(distances, len); // Value after discarding outliers
+    float absolute_distance = discard_outliers(distances, len);
+    Serial.println("abs dist ----->  ");
+    Serial.print(absolute_distance);
 
-    Serial.println(absolute_distance);
 
-
-    if (absolute_distance <= 10.0) {
-      // Self defence
-      if (override <= 1) {
-        // Turning ON light
-        digitalWrite(light, HIGH);
-        delay(4000);
-        digitalWrite(light, LOW);
-        // Turning OFF light
-        override++;
-      } else {
-        digitalWrite(light, LOW);
-      }
+    if (absolute_distance <= 5.0 && override == 101) {
+      digitalWrite(light, HIGH);
+      delay(4000);
+      digitalWrite(light, LOW);
+      override = 102;
     }
-    else if (absolute_distance >= 20.0 && absolute_distance <= 30.0) {
-      // OFF
-      if (override == 0) {
-        // Turning ON light
-        digitalWrite(light, HIGH);
-        delay(4000);
-        digitalWrite(light, LOW);
-        // Turning OFF light
-        override++;
-      }
+    else if (absolute_distance <= 10.0 && absolute_distance > 5 && override == 0 || override == 102) {
+      digitalWrite(light, HIGH);
+      delay(4000);
+      digitalWrite(light, LOW);
+      override = 101;
     }
-    else if (absolute_distance >= 40.0 && absolute_distance <= 55.0) {
+    else if (absolute_distance >= 15.0 && absolute_distance <= 25.0 && digitalRead(light) == HIGH) {
+      digitalWrite(light, LOW);
       override = 0;
     }
-
-    else if (absolute_distance >= 65.0) {
-      // Motor ON
+    else if (absolute_distance >= 15.0 && absolute_distance <= 25.0 && digitalRead(light) == LOW) {
+      delay(60 * 60 * 1000);
+    }
+    else if (absolute_distance >= 65.0 && absolute_distance <= 250.0 && digitalRead(light) == LOW ) {
+      digitalWrite(light, HIGH);
       override = 0;
-
-      if (absolute_distance >= 1000.0) {
-        digitalWrite(light, LOW);
-      } else {
-
-        digitalWrite(light, HIGH);
-        Serial.println("absolute_distance = >");
-        Serial.println(absolute_distance);
-      }
-
+    }
+    else if (absolute_distance >= 65.0 && absolute_distance <= 250.0 && digitalRead(light) == HIGH ) {
+      delay(5 * 60 * 1000);
     }
 
   } else {
-    // If 7 read are not taken
     distances[reads] = distance_left;
   }
 
